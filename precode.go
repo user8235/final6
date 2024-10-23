@@ -51,14 +51,19 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
+	_, err2 := w.Write(resp)
+	if err2 != nil {
+		fmt.Println("Что-то пошло не так...")
+		return
+	}
 }
 
 // -------2-------------------------------------------------
 func postTasks(w http.ResponseWriter, r *http.Request) {
 	var task Task
 	var buf bytes.Buffer
-
+	//id := chi.URLParam(r, "id")
+	//fmt.Println("id - ", id)
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -70,6 +75,12 @@ func postTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check for task exists
+	_, ok := tasks[task.ID]
+	if ok {
+		http.Error(w, "Задача с таким ID уже существует", http.StatusBadRequest)
+		return
+	}
 	tasks[task.ID] = task
 
 	w.Header().Set("Content-Type", "application/json")
@@ -79,7 +90,7 @@ func postTasks(w http.ResponseWriter, r *http.Request) {
 // -------3-------------------------------------------------
 func getId(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-
+	fmt.Println("id - ", id)
 	task, ok := tasks[id]
 	if !ok {
 		http.Error(w, "Задача не найдена", http.StatusNoContent)
@@ -88,13 +99,16 @@ func getId(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := json.Marshal(task)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
+	_, err2 := w.Write(resp)
+	if err2 != nil {
+		fmt.Println("Что-то пошло не так...")
+	}
 }
 
 // -------4-------------------------------------------------
@@ -115,7 +129,6 @@ func deleteId(w http.ResponseWriter, r *http.Request) {
 	delete(tasks, id)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	//w.Write(resp)
 }
 
 func main() {
