@@ -62,8 +62,6 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 func postTasks(w http.ResponseWriter, r *http.Request) {
 	var task Task
 	var buf bytes.Buffer
-	//id := chi.URLParam(r, "id")
-	//fmt.Println("id - ", id)
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
